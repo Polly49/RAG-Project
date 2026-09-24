@@ -1,0 +1,5 @@
+SQL Interview Preparation Guidance:
+1. Always master Window Functions: ROW_NUMBER(), RANK(), DENSE_RANK(), and NTILE() are heavily tested in data analyst and SDE rounds.
+2. Group By vs Having: Remember that WHERE filters rows before aggregation, while HAVING filters grouped rows after aggregation.
+3. Indexing Trade-offs: B-Tree indexes speed up SELECT lookups and range queries but introduce write overhead on INSERT, UPDATE, and DELETE operations.
+4. Self Joins & CTEs: Be comfortable using Common Table Expressions (WITH clause) to structure complex multi-step queries cleanly.

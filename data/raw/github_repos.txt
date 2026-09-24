@@ -1,0 +1,3 @@
+# Format: <repo_url>,<senior_id>,<default_topic>
+https://github.com/sameerwork826/placements,sameer_wanjari,general
+https://github.com/sameerwork826/placement-exp,sameer_wanjari,general

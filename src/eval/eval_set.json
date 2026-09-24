@@ -1,0 +1,77 @@
+[
+  {
+    "query": "What is the test pattern and interview rounds for Deloitte campus placements?",
+    "expected_topic": "hr_interview",
+    "notes": "Should retrieve Deloitte interview records mentioning 65 questions in 65 minutes covering quant, verbal, and DILR."
+  },
+  {
+    "query": "What was the selection process and questions asked in InfoEdge Data Scientist role?",
+    "expected_topic": "hr_interview",
+    "notes": "Should mention 40 MCQs on statistics, probability, ML, DL, and GenAI, followed by in-depth theory and DSA rounds."
+  },
+  {
+    "query": "What are the most common SQL window functions asked in placement interviews?",
+    "expected_topic": "sql",
+    "notes": "Should mention ROW_NUMBER, RANK, DENSE_RANK, NTILE, and CTEs."
+  },
+  {
+    "query": "How to prepare for aptitude and logical puzzles for campus hiring?",
+    "expected_topic": "aptitude",
+    "notes": "Should retrieve puzzle archives and quantitative aptitude guidance."
+  },
+  {
+    "query": "What was the interview format and CTC for BlackRock and CBA?",
+    "expected_topic": "hr_interview",
+    "notes": "Should retrieve company chronicles for BlackRock and CBA."
+  },
+  {
+    "query": "Should I focus more on DSA or SQL and core CS for non-tech / analytics roles?",
+    "expected_topic": "general",
+    "notes": "Synthesis question comparing DSA vs SQL prioritization for analytics and consulting."
+  },
+  {
+    "query": "What are the key resume guidelines and action verbs for placement CVs?",
+    "expected_topic": "resume",
+    "notes": "Should retrieve guidance on 1-page resumes, impact metrics, and action verbs."
+  },
+  {
+    "query": "What was the interview experience for Mastercard Consulting?",
+    "expected_topic": "hr_interview",
+    "notes": "Should retrieve Mastercard Consulting experience files."
+  },
+  {
+    "query": "What is the difference between Group By and Having in SQL queries?",
+    "expected_topic": "sql",
+    "notes": "Should retrieve SQL notes explaining WHERE vs HAVING filtering order."
+  },
+  {
+    "query": "What are the preparation resources and roadmap for Data Science and Machine Learning roles?",
+    "expected_topic": "genai_ds",
+    "notes": "Should retrieve DS/ML roadmaps, statistics, and modeling guidance."
+  },
+  {
+    "query": "How many interview rounds are conducted for TCG Digital and HiLabs?",
+    "expected_topic": "hr_interview",
+    "notes": "Should retrieve interview records for TCG Digital and HiLabs."
+  },
+  {
+    "query": "What are common behavioral and HR interview questions asked in on-campus drives?",
+    "expected_topic": "hr_interview",
+    "notes": "Should retrieve behavioral frameworks (STAR method) and common HR questions."
+  },
+  {
+    "query": "What core CS subjects like Operating Systems and DBMS are essential for SDE interviews?",
+    "expected_topic": "core_cs",
+    "notes": "Should retrieve technical CS core topic checklists (processes, threads, indexing, normalization)."
+  },
+  {
+    "query": "Where can I find free placement drive and roadmap links?",
+    "expected_topic": "general",
+    "notes": "Should retrieve curated placement drive links from let's code."
+  },
+  {
+    "query": "How should I structure prep time between aptitude, coding, and mock interviews?",
+    "expected_topic": "general",
+    "notes": "Strategic synthesis question regarding time allocation."
+  }
+]

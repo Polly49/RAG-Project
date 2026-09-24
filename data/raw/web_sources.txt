@@ -1,0 +1,13 @@
+# Format: <url>,<company>,<default_topic>
+# Google Doc placement guide
+https://docs.google.com/document/d/19yFY8QAH-epgJWlFcPBFRLOC4W7H44j_BxOkWg85T4s/edit?tab=t.0,,general
+
+# Google Sheets interview logs
+https://docs.google.com/spreadsheets/d/1UV8QKk-lSBxW8Qpq1aRKDd-D8pF_IyKRSu7EKkN1VFQ/edit?gid=0#gid=0,,hr_interview
+https://docs.google.com/spreadsheets/d/1UV8QKk-lSBxW8Qpq1aRKDd-D8pF_IyKRSu7EKkN1VFQ/edit?gid=1482006206#gid=1482006206,,hr_interview
+
+# GeeksforGeeks placement puzzles
+https://www.geeksforgeeks.org/aptitude/puzzles/,,aptitude
+
+# Curated placement resources
+https://www.lets-code.co.in/articles/free-placement-google-drive-links/,,general

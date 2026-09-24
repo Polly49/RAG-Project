@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placement Prep Knowledge Assistant — Multi-Agent RAG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">🎓</div>
+                <div class="brand-text">
+                    <h2>Placement AI</h2>
+                    <span>Multi-Agent RAG System</span>
+                </div>
+            </div>
+
+            <!-- Stats Widget -->
+            <div class="stats-card">
+                <div class="stats-header">📊 Knowledge Base Stats</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-chunks">-</div>
+                        <div class="stat-label">Total Chunks</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-seniors">-</div>
+                        <div class="stat-label">Senior Mentors</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-companies">-</div>
+                        <div class="stat-label">Company Logs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-sources">-</div>
+                        <div class="stat-label">Knowledge Docs</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-section">
+                <label class="filter-title" for="company-select">🏢 Filter by Company</label>
+                <select id="company-select" class="custom-select">
+                    <option value="">All Companies</option>
+                </select>
+            </div>
+
+            <div class="filter-section">
+                <label class="filter-title">🎯 Filter by Topics</label>
+                <div id="topic-pills" class="topic-pills-container">
+                    <!-- Injected dynamically -->
+                </div>
+            </div>
+
+            <!-- Architecture Info -->
+            <div class="arch-card">
+                <h4>⚡ Multi-Agent Pipeline</h4>
+                <ul>
+                    <li><strong>Router:</strong> Classifies simple vs synthesis queries</li>
+                    <li><strong>Hybrid RRF:</strong> BM25 + FAISS (all-MiniLM-L6-v2)</li>
+                    <li><strong>Reranker:</strong> Cross-Encoder (ms-marco)</li>
+                    <li><strong>Synthesizer:</strong> Surfacing mentor conflicts</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="badge-pill">🚀 Powered by LangGraph & Groq</div>
+                <h1 class="hero-title">Placement Prep Knowledge Assistant</h1>
+                <p class="hero-subtitle">Ask questions about interview patterns, test formats, technical roadmaps, CTC logs, and senior experiences.</p>
+            </header>
+
+            <!-- Example Suggestions -->
+            <div class="suggestions-wrapper">
+                <span class="suggestions-label">💡 Suggested queries:</span>
+                <div class="suggestion-chips">
+                    <button class="chip" data-query="What was the interview format, test pattern, and experience for Deloitte?">🏢 Deloitte Format</button>
+                    <button class="chip" data-query="What was the test pattern and interview experience for InfoEdge Data Scientist?">🤖 InfoEdge ML Test</button>
+                    <button class="chip" data-query="How should I prioritize DSA, SQL, and Aptitude for campus placement prep?">⚖️ DSA vs SQL vs Aptitude</button>
+                    <button class="chip" data-query="What was the interview format and CTC for BlackRock and CBA?">💼 BlackRock & CBA CTC</button>
+                </div>
+            </div>
+
+            <!-- Query Input Box -->
+            <div class="query-box-container">
+                <div class="query-input-wrapper">
+                    <textarea id="query-input" rows="2" placeholder="Ask anything... e.g. What are the key SQL window functions asked in interviews?"></textarea>
+                    <button id="submit-btn" class="send-btn">
+                        <span class="btn-text">Search Placement AI</span>
+                        <svg class="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Response Container -->
+            <div id="response-container" class="response-container hidden">
+                <!-- Conflict Warning Banner (Shown if has_conflict = true) -->
+                <div id="conflict-banner" class="conflict-banner hidden">
+                    <div class="conflict-icon">⚠️</div>
+                    <div class="conflict-content">
+                        <strong>Divergent Senior Perspectives Detected:</strong>
+                        <p>Retrieved sources contain contrasting strategies or role-specific formats. Both viewpoints are detailed below.</p>
+                    </div>
+                </div>
+
+                <!-- Answer Content -->
+                <div class="answer-card">
+                    <div class="card-header">
+                        <div class="header-left">
+                            <span class="sparkle-icon">✨</span>
+                            <h3>Synthesized Guidance & Analysis</h3>
+                        </div>
+                        <button id="copy-btn" class="copy-btn" title="Copy answer">
+                            <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <div id="answer-body" class="markdown-body">
+                        <!-- Rendered Markdown goes here -->
+                    </div>
+                </div>
+
+                <!-- Cited Sources Section -->
+                <div class="sources-section">
+                    <h4 class="section-heading">📚 Verified Sources Cited</h4>
+                    <div id="sources-pills" class="sources-pills-list">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- Expandable Evidence Accordion -->
+                <details class="evidence-accordion" id="evidence-details">
+                    <summary class="accordion-summary">
+                        <span>🔍 View Retrieved Context Evidence (<span id="evidence-count">0</span> Chunks)</span>
+                        <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </summary>
+                    <div id="evidence-list" class="evidence-list">
+                        <!-- Injected dynamically -->
+                    </div>
+                </details>
+            </div>
+
+            <!-- Skeleton Loading State -->
+            <div id="loading-state" class="loading-state hidden">
+                <div class="loading-pulse">
+                    <div class="loading-step">🔍 Router classifying intent...</div>
+                    <div class="loading-step">⚡ Hybrid search (BM25 + FAISS) running...</div>
+                    <div class="loading-step">🎯 Cross-Encoder reranking top-20 candidates...</div>
+                    <div class="loading-step">🧠 Synthesizer reviewing conflicts and citing sources...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">Copied to clipboard!</div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
