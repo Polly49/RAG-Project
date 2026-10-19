@@ -4,6 +4,14 @@ Connects 3 agents in a stateful pipeline:
 START -> Router Agent -> Retrieval Agent -> Synthesizer Agent -> END
 """
 
+import sys
+from pathlib import Path
+
+# Add project root to sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from langgraph.graph import StateGraph, START, END
 from src.agents.state import GraphState
 from src.agents.router_agent import router_node
@@ -36,6 +44,7 @@ def run_query(user_query: str, topic_filters=None, company_filter=None) -> dict:
         "user_query": user_query,
         "topic_filters": topic_filters,
         "company_filter": company_filter,
+        "expanded_queries": [],
         "needs_synthesis": False,
         "retrieved_chunks": [],
         "final_answer": "",

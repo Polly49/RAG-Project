@@ -1,45 +1,27 @@
 """
-Semantic Paragraph-Aware Chunker
-
-AI/ML Concept:
-- Splits long documents into ~400-word retrieval-friendly chunks on paragraph boundaries.
-- Applies 50-word sliding overlap so context is not lost at paragraph edges.
+Text Chunker Module
+Splits merged placement documents into overlapping semantic chunks using RecursiveCharacterTextSplitter.
 """
 
-import os
+import sys
 import json
 import uuid
 from pathlib import Path
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+# Add project root to sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import src.config as config
 
-def split_text_into_chunks(text: str, max_words: int = config.CHUNK_SIZE, overlap: int = config.CHUNK_OVERLAP) -> list[str]:
-    """Splits text on double-newline paragraph boundaries with word-level overlap."""
-    words = text.strip().split()
-    if len(words) <= max_words:
-        return [text.strip()]
-
-    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
-    chunks = []
-    current_chunk = []
-    current_count = 0
-
-    for p in paragraphs:
-        p_words = p.split()
-        p_count = len(p_words)
-
-        if current_count + p_count <= max_words:
-            current_chunk.append(p)
-            current_count += p_count
-        else:
-            if current_chunk:
-                chunks.append("\n\n".join(current_chunk))
-            current_chunk = [p]
-            current_count = p_count
-
-    if current_chunk:
-        chunks.append("\n\n".join(current_chunk))
-
-    return chunks
+# Industry-standard production text splitter
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1200,      # ~300 words, fits comfortably within embedding model context
+    chunk_overlap=200,     # ~50 words overlap to preserve context across boundaries
+    separators=["\n\n", "\n", " ", ""]
+)
 
 def chunk_all_records():
     merged_path = config.PROCESSED_DIR / "merged_raw.jsonl"
@@ -52,8 +34,12 @@ def chunk_all_records():
 
     all_chunks = []
     for rec in records:
-        text_chunks = split_text_into_chunks(rec.get("text", ""))
-        for chunk_text in text_chunks:
+        text = rec.get("text", "").strip()
+        if not text:
+            continue
+            
+        chunks = text_splitter.split_text(text)
+        for chunk_text in chunks:
             all_chunks.append({
                 "chunk_id": str(uuid.uuid4()),
                 "text": chunk_text,
@@ -65,12 +51,13 @@ def chunk_all_records():
                 "date_added": rec.get("date_added")
             })
 
-    os.makedirs(os.path.dirname(config.CHUNKS_FILE), exist_ok=True)
-    with open(config.CHUNKS_FILE, "w", encoding="utf-8") as f:
+    output_path = Path(config.CHUNKS_FILE)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
         for c in all_chunks:
             f.write(json.dumps(c) + "\n")
 
-    print(f"Created {len(all_chunks)} chunks from {len(records)} raw documents -> {config.CHUNKS_FILE}")
+    print(f"Created {len(all_chunks)} chunks from {len(records)} documents -> {output_path}")
 
 if __name__ == "__main__":
     chunk_all_records()

@@ -20,5 +20,6 @@ def retrieval_node(state: GraphState) -> GraphState:
         top_k_final=config.TOP_K_RERANK
     )
     
+    state["expanded_queries"] = results.get("expanded_queries", [query])
     state["retrieved_chunks"] = results.get("reranked_chunks", [])
     return state

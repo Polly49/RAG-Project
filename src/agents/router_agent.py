@@ -1,13 +1,27 @@
 """
-Router Agent Node
-Uses LLM zero-shot classification to decide if a query is a:
-- SIMPLE lookup (e.g. "What is Deloitte's test pattern?")
-- SYNTHESIS query (e.g. "Should I focus on DSA or Machine Learning first?")
+Router Agent Node using LangChain & LangGraph
+Classifies user queries into SIMPLE lookup vs SYNTHESIS using ChatGroq.
 """
 
-from groq import Groq
+import os
+import sys
+from pathlib import Path
+from langchain_groq import ChatGroq
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+# Add project root to sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import src.config as config
 from src.agents.state import GraphState
+
+router_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are an intent classifier for a campus placement assistant. Classify the user query into either 'SIMPLE' (direct factual lookup, test pattern, syllabus) or 'SYNTHESIS' (strategy, comparison, roadmap where advice may differ). Respond with ONLY the single word 'SIMPLE' or 'SYNTHESIS'."),
+    ("user", "{query}")
+])
 
 def router_node(state: GraphState) -> GraphState:
     query = state.get("user_query", "").strip()
@@ -15,26 +29,17 @@ def router_node(state: GraphState) -> GraphState:
         state["needs_synthesis"] = False
         return state
 
-    client = Groq(api_key=config.GROQ_API_KEY)
-    
-    prompt = f"""You are an intent classifier for a campus placement assistant.
-Classify this student question into one category:
-1. SIMPLE: Direct factual lookup (test pattern, syllabus, eligibility).
-2. SYNTHESIS: Strategy, timeline, comparison, or advice question where seniors might differ.
-
-Query: "{query}"
-Respond with ONLY the word "SIMPLE" or "SYNTHESIS"."""
+    api_key = os.getenv("GROQ_API_KEY") or config.GROQ_API_KEY
+    if not api_key:
+        state["needs_synthesis"] = True
+        return state
 
     try:
-        response = client.chat.completions.create(
-            model=config.DEFAULT_GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
-            max_tokens=10
-        )
-        decision = response.choices[0].message.content.strip().upper()
+        llm = ChatGroq(api_key=api_key, model=config.DEFAULT_GROQ_MODEL, temperature=0.0)
+        chain = router_prompt | llm | StrOutputParser()
+        decision = chain.invoke({"query": query}).strip().upper()
         state["needs_synthesis"] = ("SYNTHESIS" in decision)
     except Exception:
-        state["needs_synthesis"] = True  # Safe default
+        state["needs_synthesis"] = True
 
     return state

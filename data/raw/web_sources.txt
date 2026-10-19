@@ -11,3 +11,7 @@ https://www.geeksforgeeks.org/aptitude/puzzles/,,aptitude
 
 # Curated placement resources
 https://www.lets-code.co.in/articles/free-placement-google-drive-links/,,general
+
+# Notion links
+https://kaput-bike-0b6.notion.site/Placement-Prep-79f8e3ebf58f400e8095e3db1866ca48,,general
+https://spangle-lung-e61.notion.site/31ef01b5d3fa804f9cb8ef9d5d5aef99,,general

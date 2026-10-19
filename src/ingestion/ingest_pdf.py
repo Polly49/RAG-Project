@@ -7,7 +7,14 @@ import os
 import uuid
 import datetime
 import json
+import sys
 from pathlib import Path
+
+# Add project root to sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import pdfplumber
 import src.config as config
 from src.ingestion.ingest_github import guess_topic, guess_company

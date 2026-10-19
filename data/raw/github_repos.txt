@@ -1,3 +1,6 @@
 # Format: <repo_url>,<senior_id>,<default_topic>
 https://github.com/sameerwork826/placements,sameer_wanjari,general
 https://github.com/sameerwork826/placement-exp,sameer_wanjari,general
+https://github.com/amartinson193/The-Ultimate-List-of-Free-SQL-Resources,amartinson193,sql
+https://github.com/ayush-agarwal-0502/Placement-guidance-juniors,ayush_agarwal,general
+https://github.com/SubhadeepC28/Placement-material,subhadeep_c28,general

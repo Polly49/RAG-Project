@@ -10,6 +10,7 @@ class GraphState(TypedDict):
     topic_filters: Optional[List[str]]       # Optional topic filters (e.g. ['dsa', 'sql'])
     company_filter: Optional[str]            # Optional company filter (e.g. 'Deloitte')
     
+    expanded_queries: List[str]              # Structured query variations generated for hybrid retrieval
     needs_synthesis: bool                    # Set by Router: True if multi-source strategy question
     retrieved_chunks: List[Dict[str, Any]]   # Set by Retriever: Top reranked context chunks
     final_answer: str                        # Set by Synthesizer: Final grounded answer

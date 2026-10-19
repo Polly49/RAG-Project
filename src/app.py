@@ -11,6 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+import os
 import json
 import streamlit as st
 import src.config as config
@@ -100,6 +101,22 @@ with st.sidebar:
     company_filter = None if selected_company == "All Companies" else selected_company
 
     st.markdown("---")
+    st.subheader("🔑 Groq API Key")
+    current_key = os.getenv("GROQ_API_KEY", "")
+    api_key_val = st.text_input(
+        "API Key:",
+        value=current_key,
+        type="password",
+        placeholder="gsk_...",
+        help="Get your free key at https://console.groq.com/keys"
+    )
+    if api_key_val:
+        os.environ["GROQ_API_KEY"] = api_key_val
+        config.GROQ_API_KEY = api_key_val
+    else:
+        st.caption("⚠️ Add a key to enable LLM response generation.")
+
+    st.markdown("---")
     with st.expander("ℹ️ AI Architecture"):
         st.markdown("""
         - **Router:** Classifies query intent
@@ -153,6 +170,11 @@ if st.button("🚀 Ask Assistant", type="primary", use_container_width=True):
 
             # Sources
             st.markdown("---")
+            if result.get("expanded_queries"):
+                with st.expander("🔄 View AI Multi-Query Expansions"):
+                    for eq in result["expanded_queries"]:
+                        st.markdown(f"- 🔎 `{eq}`")
+
             st.markdown("#### 📚 Verified Sources Cited")
             for src in result.get("sources_used", []):
                 st.markdown(f'<span class="source-pill">📌 {src}</span>', unsafe_allow_html=True)

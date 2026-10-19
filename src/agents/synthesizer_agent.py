@@ -1,11 +1,20 @@
 """
-Synthesizer Agent Node (Answer Generation & Conflict Detection)
-1. Grounds LLM response strictly on retrieved senior excerpts.
-2. Identifies and surfaces contrasting/conflicting advice across seniors.
-3. Generates clear markdown output with exact senior & file citations.
+Synthesizer Agent Node using LangChain & LangGraph
+Grounds responses strictly on retrieved excerpts and detects conflicting senior guidance.
 """
 
-from groq import Groq
+import os
+import sys
+from pathlib import Path
+from langchain_groq import ChatGroq
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+
+# Add project root to sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import src.config as config
 from src.agents.state import GraphState
 
@@ -13,6 +22,19 @@ def detect_conflicts(text: str) -> bool:
     """Checks if the answer identifies divergent senior advice."""
     signals = ["differ", "conflict", "disagree", "diverge", "on the other hand", "whereas", "varying advice"]
     return any(sig in text.lower() for sig in signals)
+
+synthesizer_prompt = ChatPromptTemplate.from_messages([
+    ("system", """You are the Placement Prep Knowledge Assistant.
+Answer the student's question using ONLY the provided Source Excerpts.
+
+RULES:
+1. STRICT GROUNDING: Do not hallucinate outside facts.
+2. CONFLICT DETECTION: If seniors give differing advice (e.g. DSA vs Projects), explicitly highlight the difference:
+   '⚠️ Note: Sources offer differing guidance: [Senior A] suggests X, while [Senior B] suggests Y.'
+3. CITATIONS: Cite the senior or source name for specific tips or patterns.
+4. STRUCTURE: Use clean markdown headers and bullet points."""),
+    ("user", "STUDENT QUESTION:\n{query}\n\nRETRIEVED EXCERPTS:\n{context}\n\nSynthesize a clear response:")
+])
 
 def synthesizer_node(state: GraphState) -> GraphState:
     query = state.get("user_query", "").strip()
@@ -24,7 +46,7 @@ def synthesizer_node(state: GraphState) -> GraphState:
         state["sources_used"] = []
         return state
 
-    # Format context blocks with senior metadata
+    # Format context blocks with metadata
     context_blocks = []
     sources = set()
     for idx, c in enumerate(chunks, 1):
@@ -35,30 +57,18 @@ def synthesizer_node(state: GraphState) -> GraphState:
 
     context_text = "\n\n---\n\n".join(context_blocks)
 
-    system_prompt = """You are the Placement Prep Knowledge Assistant.
-Answer the student's question using ONLY the provided Source Excerpts.
+    api_key = os.getenv("GROQ_API_KEY") or config.GROQ_API_KEY
+    if not api_key:
+        state["final_answer"] = "⚠️ **Groq API Key is missing!** Please enter your Groq API key in the sidebar or update the `.env` file to generate synthesized answers."
+        state["has_conflict"] = False
+        state["sources_used"] = sorted(list(sources))
+        return state
 
-RULES:
-1. STRICT GROUNDING: Do not hallucinate outside facts.
-2. CONFLICT DETECTION: If seniors give differing advice (e.g. DSA vs Projects), explicitly highlight the difference:
-   '⚠️ Note: Sources offer differing guidance: [Senior A] suggests X, while [Senior B] suggests Y.'
-3. CITATIONS: Cite the senior/file name for specific tips or patterns.
-4. STRUCTURE: Use clean markdown headers and bullet points."""
-
-    user_prompt = f"STUDENT QUESTION:\n{query}\n\nRETRIEVED EXCERPTS:\n{context_text}\n\nSynthesize a clear response:"
-
-    client = Groq(api_key=config.GROQ_API_KEY)
     try:
-        response = client.chat.completions.create(
-            model=config.DEFAULT_GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.2,
-            max_tokens=1000
-        )
-        answer = response.choices[0].message.content.strip()
+        llm = ChatGroq(api_key=api_key, model=config.DEFAULT_GROQ_MODEL, temperature=0.2, max_tokens=1000)
+        chain = synthesizer_prompt | llm | StrOutputParser()
+        answer = chain.invoke({"query": query, "context": context_text})
+
         state["final_answer"] = answer
         state["has_conflict"] = detect_conflicts(answer)
         state["sources_used"] = sorted(list(sources))

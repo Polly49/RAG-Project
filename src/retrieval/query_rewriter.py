@@ -1,42 +1,49 @@
 """
-Multi-Query Rewriter (Query Expansion)
-
-AI/ML Concept:
-- A user query like 'sql tips' may fail to match documents about 'window functions' or 'queries'.
-- Using an LLM to generate 3 alternative domain-specific query variations improves retrieval recall.
+Multi-Query Rewriter using LangChain Structured Outputs
+Guarantees strictly formatted query variations using Pydantic schema.
 """
 
-import re
-from groq import Groq
+import os
+import sys
+from pathlib import Path
+from pydantic import BaseModel, Field
+from langchain_groq import ChatGroq
+from langchain_core.prompts import ChatPromptTemplate
+
+# Add project root to sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import src.config as config
 
-_GROQ_CLIENT = None
+# Pydantic schema for structured output
+class QueryVariations(BaseModel):
+    """Structured variations of a search query for placement preparation."""
+    variations: list[str] = Field(
+        description="3 distinct search queries covering key concepts, technical synonyms, and interview patterns"
+    )
 
-def get_groq_client() -> Groq:
-    global _GROQ_CLIENT
-    if _GROQ_CLIENT is None:
-        _GROQ_CLIENT = Groq(api_key=config.GROQ_API_KEY)
-    return _GROQ_CLIENT
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are an AI placement search assistant. Generate {n} distinct search query variations for the student's question to maximize relevant placement note retrieval."),
+    ("user", "{query}")
+])
 
 def rewrite_query(original_query: str, n: int = 3) -> list[str]:
-    """Generates n alternative search queries using Groq LLM."""
+    """Generates schema-validated alternative search queries using LangChain structured output."""
     if not original_query or not original_query.strip():
         return [original_query]
 
-    client = get_groq_client()
-    prompt = f"""Generate {n} different specific placement search queries for: "{original_query}".
-Rules: Output ONLY the {n} query variations, one per line. No numbers, no extra text."""
+    api_key = os.getenv("GROQ_API_KEY") or config.GROQ_API_KEY
+    if not api_key:
+        return [original_query]
 
     try:
-        response = client.chat.completions.create(
-            model=config.DEFAULT_GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.3,
-            max_tokens=150
-        )
-        lines = response.choices[0].message.content.strip().split("\n")
-        rewrites = [re.sub(r"^[\d\.\-\*\•\s]+", "", l).strip() for l in lines if l.strip()]
-        return [original_query] + rewrites[:n]
+        llm = ChatGroq(api_key=api_key, model=config.DEFAULT_GROQ_MODEL, temperature=0.3)
+        structured_llm = llm.with_structured_output(QueryVariations)
+        chain = prompt | structured_llm
+        result: QueryVariations = chain.invoke({"query": original_query, "n": n})
+        return [original_query] + result.variations[:n]
     except Exception:
         return [original_query]
 

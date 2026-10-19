@@ -33,10 +33,14 @@ FAISS_INDEX_PATH = str(INDEXES_DIR / "faiss_index")
 BM25_INDEX_PATH = str(INDEXES_DIR / "bm25_index.pkl")
 METADATA_PATH = str(INDEXES_DIR / "chunk_metadata.jsonl")
 
+# GitHub Ingestion Paths
+GITHUB_LIST_FILE = RAW_DIR / "github_repos.txt"   # Text file listing repo URLs to ingest
+CLONED_REPOS_DIR = RAW_DIR / "cloned_repos"       # Where extracted repo files are stored
+
 # --- AI & ML Hyperparameters ---
 # 1. LLM Model (Groq)
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-DEFAULT_GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+DEFAULT_GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
 # 2. Embedding Model (Bi-Encoder for Dense Semantic Search)
 EMBED_MODEL_NAME = "all-MiniLM-L6-v2"  # 384-dimensional dense vectors
