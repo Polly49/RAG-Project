@@ -1,11 +1,11 @@
 """
-End-to-End Retrieval & Reranking Pipeline
+Step 5: End-to-End Retrieval & Reranking Pipeline
 
 AI/ML Workflow:
-1. Query Expansion (Groq LLM generates 3 rewrites)
-2. Multi-Query Hybrid Search (BM25 + FAISS for every rewrite)
+1. Query Expansion (Groq LLM generates 3 rewrites) -> step2_query_rewriter.py
+2. Multi-Query Hybrid Search (BM25 + FAISS for every rewrite) -> step3_hybrid_retriever.py
 3. Score Fusion & Deduplication (Merges candidates, keeps highest score)
-4. Cross-Encoder Reranker (Reranks top-20 to top-5)
+4. Cross-Encoder Precision Reranker (Reranks top-20 to top-5) -> step4_reranker.py
 """
 
 import sys
@@ -18,9 +18,9 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import time
 import src.config as config
-from src.retrieval.query_rewriter import rewrite_query
-from src.retrieval.hybrid_retriever import hybrid_search
-from src.retrieval.reranker import rerank
+from src.retrieval.step2_query_rewriter import rewrite_query
+from src.retrieval.step3_hybrid_retriever import hybrid_search
+from src.retrieval.step4_reranker import rerank
 
 def retrieve_and_rerank(user_query: str, topic_filters=None, company_filter=None, top_k_final: int = config.TOP_K_RERANK) -> dict:
     start_time = time.time()

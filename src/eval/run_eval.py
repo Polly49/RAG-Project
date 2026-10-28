@@ -15,8 +15,8 @@ if sys.stdout and hasattr(sys.stdout, "reconfigure"):
 # Add project root to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config
-from src.retrieval.hybrid_retriever import dense_search, hybrid_search, load_indexes
-from src.retrieval.pipeline import retrieve_and_rerank
+from src.retrieval.step3_hybrid_retriever import dense_search, hybrid_search, load_indexes
+from src.retrieval.step5_pipeline import retrieve_and_rerank
 
 def run_evaluation():
     eval_set_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "eval_set.json")

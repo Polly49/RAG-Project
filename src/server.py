@@ -19,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import src.config as config
-from src.agents.graph import run_query
+from src.agents.step5_graph import run_query
 
 app = FastAPI(
     title="Placement Prep Knowledge Assistant API",

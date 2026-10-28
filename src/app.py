@@ -15,7 +15,7 @@ import os
 import json
 import streamlit as st
 import src.config as config
-from src.agents.graph import run_query
+from src.agents.step5_graph import run_query
 
 # Configure Page
 st.set_page_config(

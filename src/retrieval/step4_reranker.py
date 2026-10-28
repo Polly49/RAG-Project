@@ -1,5 +1,5 @@
 """
-Cross-Encoder Reranker Module
+Step 4: Cross-Encoder Precision Reranker Module
 
 AI/ML Concept:
 - Bi-Encoder (FAISS): Encodes query and text separately for fast search (O(N)).

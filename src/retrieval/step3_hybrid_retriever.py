@@ -1,5 +1,5 @@
 """
-Hybrid Retriever (FAISS Dense Search + BM25 Sparse Search + RRF Fusion)
+Step 3: Hybrid Retriever (FAISS Dense Search + BM25 Sparse Search + RRF Fusion)
 
 AI/ML Concepts:
 - Dense Search: Captures semantic meaning (e.g. "DSA roadmap" matches "coding preparation").
@@ -13,7 +13,8 @@ import json
 import pickle
 import numpy as np
 import faiss
-from sentence_transformers import SentenceTransformer
+from langchain_huggingface import HuggingFaceEmbeddings
+# Kept for revision reference: from sentence_transformers import SentenceTransformer
 import sys
 from pathlib import Path
 
@@ -23,7 +24,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import src.config as config
-from src.retrieval.build_index import tokenize_for_bm25
+from src.retrieval.step1_build_index import tokenize_for_bm25
 
 # Global Cache to load indices into memory once
 _FAISS_INDEX = None
@@ -39,19 +40,23 @@ def load_indexes():
             _BM25_INDEX = pickle.load(f)
         with open(config.METADATA_PATH, "r", encoding="utf-8") as f:
             _METADATA = [json.loads(line) for line in f if line.strip()]
-        _EMBED_MODEL = SentenceTransformer(config.EMBED_MODEL_NAME)
+        _EMBED_MODEL = HuggingFaceEmbeddings(
+            model_name=config.EMBED_MODEL_NAME,
+            encode_kwargs={"normalize_embeddings": True}
+        )
+        # Kept for revision reference:
+        # _EMBED_MODEL = SentenceTransformer(config.EMBED_MODEL_NAME)
     return _FAISS_INDEX, _BM25_INDEX, _METADATA, _EMBED_MODEL
 
 def dense_search(query: str, k: int = 30) -> list[tuple[int, float]]:
-    """Performs cosine-similarity vector search using FAISS."""
+    """Performs cosine-similarity vector search using FAISS and LangChain embeddings."""
     faiss_idx, _, _, embed_model = load_indexes()
-    query_vec = embed_model.encode([query], convert_to_numpy=True)
-    faiss.normalize_L2(query_vec)
+    query_vec = np.array([embed_model.embed_query(query)], dtype=np.float32)
     scores, indices = faiss_idx.search(query_vec, min(k, faiss_idx.ntotal))
     return [(int(idx), float(score)) for idx, score in zip(indices[0], scores[0]) if idx != -1]
 
 def sparse_search(query: str, k: int = 30) -> list[tuple[int, float]]:
-    """Performs BM25 keyword matching search."""
+    """Performs BM25 keyword matching search with stemmed tokens."""
     _, bm25_idx, _, _ = load_indexes()
     tokens = tokenize_for_bm25(query)
     if not tokens:

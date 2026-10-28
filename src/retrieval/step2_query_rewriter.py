@@ -1,5 +1,5 @@
 """
-Multi-Query Rewriter using LangChain Structured Outputs
+Step 2: Multi-Query Rewriter using LangChain Structured Outputs
 Guarantees strictly formatted query variations using Pydantic schema.
 """
 
